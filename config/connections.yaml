@@ -1,0 +1,63 @@
+# PiaB v3 — Connection Configuration
+# Phase 1 populates these IDs from actual Google Sheets discovery.
+# Run `openclaw tool gog drive.list` to find your sheet IDs.
+
+google_sheets:
+  life_os:
+    sheet_id: "PLACEHOLDER_LIFE_OS_SHEET_ID"
+    # Tab reference guide (actual names, exact casing):
+    tabs:
+      inbox: "INBOX"                    # Row 2 headers, Row 3+ data
+      master_log: "_MASTER_LOG"         # Row 1 headers, Row 2+ data (46 cols A-AT)
+      projects: "_PROJECTS"             # Row 1 headers
+      routines: "_ROUTINES"             # Row 1 headers
+      cadence: "_CADENCE"               # Row 1 headers
+      scores: "_SCORES"                 # Row 1 headers
+      escalation: "_ESCALATION_QUEUE"   # Row 5 headers, Row 6+ data
+      ai_context: "_AI_CONTEXT"         # Row 1 headers
+      domains: "_DOMAINS"               # Row 1 headers
+      config: "_CONFIG"                 # Row 1 headers
+      list_items: "LIST_ITEMS"          # Row 1 headers
+      audit: "_AUDIT"                   # Row 1 headers
+      game_players: "_GAME_PLAYERS"     # Row 1 headers
+      game_log: "_GAME_LOG"             # Row 1 headers
+      game_quests: "_GAME_QUESTS"       # Row 1 headers
+      game_achievements: "_GAME_ACHIEVEMENTS"
+      game_bosses: "_GAME_BOSSES"       # Row 1 headers
+      saturday_themes: "_SATURDAY_THEMES"
+      people: "_PEOPLE"
+      contacts: "_CONTACTS"
+
+  financial_os:
+    sheet_id: "PLACEHOLDER_FINANCIAL_OS_SHEET_ID"
+    tabs:
+      dashboard: "Dashboard"
+      assumptions: "Assumptions"
+      pro_forma: "5-Year Pro Forma"
+      budget_vs_actual: "Budget vs Actual"    # Row 5 headers (categories), Row 22+ (merchants)
+      balance_sheet: "Balance Sheet"
+      config: "Config"                        # Row 29+: budget targets. Row 48: savings rate target.
+      raw_data: "Raw Data"                    # Row 2 headers, Row 3+ data (11 cols A-K)
+      import: "Import"
+
+google_calendar:
+  family_ssot:
+    calendar_id: "PLACEHOLDER_FAMILY_CALENDAR_ID"
+    role: primary_ssot
+  holds:
+    calendar_id: null
+    role: tentative
+
+gmail:
+  enabled: true
+  triage_labels:
+    action_needed: "ActionNeeded"
+    bills: "Bills"
+    deadlines: "Deadlines"
+  scan_frequency_minutes: 60
+
+backup:
+  enabled: true
+  frequency: daily
+  local_path: "/data/backups/piab/"
+  retention_days: 30

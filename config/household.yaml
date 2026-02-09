@@ -1,0 +1,97 @@
+# PiaB v3 — Household Configuration
+# Phase 2 populates phone numbers and channel preferences from user input.
+
+household:
+  name: "The Stice Family"
+  timezone: "America/New_York"
+  agent_name: "Poopsy"
+  address: "761 E Morningside Dr NE, Atlanta GA"
+
+  # Map sheet owner names to PiaB person keys
+  owner_map:
+    "James": james
+    "Jimmy Stice": james
+    "Laura": laura
+    "Laura Holland Stice": laura
+    "Both": shared
+    "Henry": henry
+
+people:
+  james:
+    role: co_head
+    full_name: "James Stice"
+    sheet_names: ["James", "Jimmy Stice"]
+    phone: "PLACEHOLDER_JAMES_PHONE"
+    whatsapp_jid: "PLACEHOLDER_JAMES_JID"
+    channels:
+      primary: whatsapp
+      fallback: []
+      voice_calls: false
+    adhd_profile:
+      severity: moderate_to_severe
+      best_hours: [7, 8, 9, 10, 11]
+      fade_after: 14
+      protect_after: 20
+      initiation_delay: high
+      time_blindness: severe
+      hyperfocus_domains: [tech, home_projects]
+      avoidance_domains: [finance, admin, medical]
+      paralysis_threshold: 5
+      response_to:
+        streaks: high
+        micro_steps: high
+        momentum: high
+        competitive: moderate
+        urgency: moderate
+        guilt: negative
+        shame: negative
+        long_lists: negative
+        vague_asks: negative
+    preferences:
+      briefing_style: concise
+      max_priorities_shown: 3
+      acknowledgment_style: brief
+
+  laura:
+    role: co_head
+    full_name: "Laura Holland Stice"
+    sheet_names: ["Laura", "Laura Holland Stice"]
+    phone: "PLACEHOLDER_LAURA_PHONE"
+    whatsapp_jid: "PLACEHOLDER_LAURA_JID"
+    channels:
+      primary: whatsapp
+      fallback: []
+      voice_calls: false
+    adhd_profile:
+      severity: moderate
+      best_hours: [8, 9, 10, 11, 12]
+      fade_after: 15
+      protect_after: 21
+      initiation_delay: moderate
+      time_blindness: moderate
+      hyperfocus_domains: []
+      avoidance_domains: []
+      paralysis_threshold: 7
+      response_to:
+        collaborative: high
+        structured: high
+        planning: positive
+        streaks: moderate
+        guilt: negative
+    preferences:
+      briefing_style: warm
+      max_priorities_shown: 3
+      acknowledgment_style: warm
+
+  henry:
+    role: child
+    age: 6
+    # Henry participates in gamification only
+
+relationship_rules:
+  - never_compare_james_and_laura
+  - never_pit_against_each_other
+  - collaborative_framing_for_shared_tasks
+  - both_get_credit_for_shared_wins
+  - respect_each_persons_pace
+  - if_conflict_detected_stay_neutral

@@ -1,0 +1,8 @@
+node_modules/
+state/
+data/ledger/
+data/backups/
+piab-build/checkpoints/
+*.log
+.env
+.DS_Store
