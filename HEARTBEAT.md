@@ -1,90 +1,76 @@
-# HEARTBEAT — PiaB v3 Scheduled Coaching Loop
-
-This document defines the heartbeat schedule for the PiaB coaching system. Each heartbeat triggers an observe-decide-act cycle.
+# HEARTBEAT — PiaB v3 Gate-Aware Coaching Loop
 
 ## Schedule
 
-| Time | Action | Details |
+| Time | Script | Details |
 |------|--------|---------|
-| 06:00 | **Full Observe** | Read all data sources, compute signals |
-| 06:30 | **Morning Briefing** | Send individual briefings to James and Laura |
-| 09:00 | **Mini Observe** | Check for new escalation items, calendar proximity |
-| 12:00 | **Midday Check** | Nudge if no completions yet |
-| 15:00 | **Afternoon Nudge** | Nudge if completions < 2 and before fade_after |
-| 17:00 | **Mini Observe** | Check escalation queue, routine due dates |
-| 20:00 | **Evening Close** | Send shared evening summary |
-| 23:00 | **Streak Check** | Verify daily streaks, update gamification |
-| 02:00 | **Backup** | Run backup.mjs |
+| 00:00 | `gate/gate-reset.mjs` | Reset gate to LOCKED_MORNING, clear intentions |
+| 06:00 | `observe.mjs` | Full data read (sheets, calendar, budget) |
+| *on pillar* | `decide.mjs --mode=on_tier1` | Morning briefing fires on TIER_1 transition |
+| 11:30 | `gate/deadline-check.mjs --deadline=tier2` | Warn if not at TIER_2 |
+| 12:00 | `gate/grace-check.mjs` | Auto-grant grace day if 0 pillars |
+| 13:00 | `decide.mjs --mode=midday` | Midday check-in (silenced on crash) |
+| 15:00 | `gate/deadline-check.mjs --deadline=tier3` | Warn if not at TIER_3 |
+| 17:00 | `gate/deadline-check.mjs --deadline=lockout` | Lock if not FULL_ACCESS |
+| 17:00 | `observe.mjs` | Refresh signals |
+| 19:30 | `decide.mjs --mode=evening` | Evening close + intention collection |
+| 20:00 | `gate/gate-protect.mjs` | Force LOCKED_NIGHT |
+| 23:00 | `gate/streak-check.mjs` | Update streaks, check milestones |
+| Sun 18:00 | `gate/weekly-compute.mjs` | Full weekly scorecard |
+| Sun 18:00 | `decide.mjs --mode=weekly` | Laura friction prompt, buddy scorecard |
+| 02:00 | `backup.mjs` | Daily backup |
 
-## Heartbeat Execution
-
-Each heartbeat runs:
-
-```bash
-# Full observe cycle
-node scripts/observe.mjs
-node scripts/decide.mjs --mode=auto
-# Decisions are written to state/decisions.json
-# OpenClaw reads decisions and sends messages via configured channels
-```
-
-## Escalation Queue Check
-
-During each observe cycle, check `_ESCALATION_QUEUE` for items needing human decision:
-- Items with `days_stagnant > 7` and `commitment_level = "hard"` get escalated
-- Items with `days_stagnant > 14` regardless of commitment get flagged
-- Each escalation item gets ONE nudge per day maximum
-
-## Routine Overdue Check
-
-Check `_ROUTINES` for overdue items:
-- Compare `next_due` column against today's date
-- Surface overdue routines in morning briefing
-- Don't create duplicate tasks for routine items — just nudge
-
-## Streak Maintenance
-
-At 23:00 daily:
-1. Read `_GAME_PLAYERS` for each person
-2. Check if `streak_last_date` is today
-3. If YES: streak continues (already updated by task completion)
-4. If NO: streak breaks — set `streak_current = 0`
-5. Log streak status to `_GAME_LOG`
-
-## Saturday Special
-
-On Saturdays:
-1. Read `_SATURDAY_THEMES` and pick least-recently-used theme
-2. Include theme in morning briefing
-3. Update `last_used` and `use_count` in the sheet
-
-## Financial Pulse
-
-Weekly (Mondays at 06:00):
-1. Run `budget.getMoneyPulse()`
-2. If status is `red` or `yellow`, include in morning briefing
-3. If merchant overages detected, surface in coaching
-
-## Cron Configuration (for OpenClaw)
+## Cron Configuration
 
 ```yaml
 cron:
+  # Gate management
+  - schedule: "0 0 * * *"
+    command: "node scripts/gate/gate-reset.mjs"
+  - schedule: "30 11 * * 1-5"
+    command: "node scripts/gate/deadline-check.mjs --deadline=tier2"
+  - schedule: "0 12 * * 1-5"
+    command: "node scripts/gate/grace-check.mjs"
+  - schedule: "0 15 * * 1-5"
+    command: "node scripts/gate/deadline-check.mjs --deadline=tier3"
+  - schedule: "0 17 * * 1-5"
+    command: "node scripts/gate/deadline-check.mjs --deadline=lockout"
+  - schedule: "0 20 * * *"
+    command: "node scripts/gate/gate-protect.mjs"
+  - schedule: "0 23 * * *"
+    command: "node scripts/gate/streak-check.mjs"
+
+  # Coaching loop
   - schedule: "0 6 * * *"
-    command: "node scripts/observe.mjs && node scripts/decide.mjs --mode=morning"
-  - schedule: "30 6 * * *"
-    command: "node scripts/decide.mjs --mode=morning"
-  - schedule: "0 9 * * *"
     command: "node scripts/observe.mjs"
-  - schedule: "0 12 * * *"
-    command: "node scripts/decide.mjs --mode=midday"
-  - schedule: "0 15 * * *"
-    command: "node scripts/decide.mjs --mode=afternoon"
+  - schedule: "0 13 * * 1-5"
+    command: "node scripts/observe.mjs && node scripts/decide.mjs --mode=midday"
   - schedule: "0 17 * * *"
     command: "node scripts/observe.mjs"
-  - schedule: "0 20 * * *"
-    command: "node scripts/decide.mjs --mode=evening"
-  - schedule: "0 23 * * *"
-    command: "node scripts/learn.mjs"
+  - schedule: "30 19 * * *"
+    command: "node scripts/observe.mjs && node scripts/decide.mjs --mode=evening"
+
+  # Weekly
+  - schedule: "0 18 * * 0"
+    command: "node scripts/gate/weekly-compute.mjs && node scripts/decide.mjs --mode=weekly"
+
+  # Maintenance
   - schedule: "0 2 * * *"
     command: "node scripts/backup.mjs"
+  - schedule: "0 3 * * 0"
+    command: "node scripts/learn.mjs"
 ```
+
+## Key Behavioral Rules
+
+1. **Morning briefing fires on TIER_1 transition, not on a clock.** When James sends his first pillar photo, the gate transitions and triggers the briefing.
+
+2. **Crash detection = silence.** If 0 pillars + 0 responses by 1 PM, do NOT send the midday check-in. Silence is the coaching decision.
+
+3. **Grace day is automatic.** If 0 pillars by noon and grace not used this week, it auto-activates. User never has to ask (asking = admitting failure = shame).
+
+4. **Evening close collects implementation intentions.** The if-then plan for tomorrow is read back in the morning briefing.
+
+5. **Streaks are checked at 11 PM.** If no pillar completion today and no grace day, streaks reset.
+
+6. **Sunday is review day.** Full scorecard, Laura friction score, financial stake evaluation, accountability buddy update.

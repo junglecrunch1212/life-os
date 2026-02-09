@@ -1,8 +1,20 @@
 node_modules/
-state/
 data/ledger/
 data/backups/
 piab-build/checkpoints/
 *.log
 .env
 .DS_Store
+
+# State files are runtime — tracked templates exist, runtime versions don't
+state/gate.json
+state/photo-hashes.json
+state/streaks.json
+state/daily_intentions.json
+state/body_double_sessions.json
+state/coach_signals.json
+state/daily_context.json
+state/decisions.json
+state/learnings.json
+state/weekly_scorecard.json
+state/metrics/

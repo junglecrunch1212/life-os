@@ -1,13 +1,19 @@
 #!/usr/bin/env node
 // scripts/observe.mjs — Compute behavioral signals from actual Life OS + Financial OS data
+// Now includes gate state, pillar status, streak data, and social accountability signals.
 
 import fs from 'fs';
 import path from 'path';
-import { SKILL_ROOT, loadHousehold } from './lib/yaml-loader.mjs';
+import { SKILL_ROOT, loadHousehold, loadYaml } from './lib/yaml-loader.mjs';
 import sheets from './lib/sheets.mjs';
 import calendar from './lib/calendar.mjs';
 import budget from './lib/budget.mjs';
 import ledger from './lib/ledger.mjs';
+import gate from './lib/gate.mjs';
+import pillars from './lib/pillars.mjs';
+import reinforcement from './lib/reinforcement.mjs';
+import social from './lib/social.mjs';
+import bodyDouble from './lib/body-double.mjs';
 
 const DRY_RUN = process.argv.includes('--dry-run');
 
@@ -16,6 +22,21 @@ async function main() {
   const people = ['james', 'laura']; // active coaching targets
   const signals = {};
   const context = { computed_at: new Date().toISOString(), people: {} };
+
+  // ── Gate state ──
+  const gateState = gate.getGateSummary();
+  const pillarStatus = pillars.getPillarStatus();
+  const pillarRate = pillars.getPillarRate(5);
+  const streaks = reinforcement.getCurrentStreaks();
+  const frictionTrend = social.getFrictionTrend(4);
+  const selfInitiation = bodyDouble.getSelfInitiationRatio('james', 7);
+
+  context.gate = gateState;
+  context.pillar_status = pillarStatus;
+  context.pillar_rate = pillarRate;
+  context.streaks = streaks;
+  context.friction = frictionTrend;
+  context.self_initiation = selfInitiation;
 
   // ── Read from actual Life OS ──
   let allItems = [];
@@ -207,10 +228,33 @@ async function main() {
     };
   }
 
-  // Assemble final output
-  const signalsOut = { ...signals, money_pulse: moneyPulse.success ? moneyPulse : { status: 'unknown' }, computed_at: new Date().toISOString() };
+  // Assemble final output — includes gate state and behavioral coaching signals
+  const signalsOut = {
+    ...signals,
+    money_pulse: moneyPulse.success ? moneyPulse : { status: 'unknown' },
+    gate: gateState,
+    pillar_rate: pillarRate,
+    streaks,
+    self_initiation: selfInitiation,
+    laura_friction: frictionTrend,
+    computed_at: new Date().toISOString(),
+  };
   context.money_pulse = moneyPulse;
   context.saturday_theme = null; // populated by agent on Saturdays
+
+  // ── Crash detection ──
+  const crashSignals = {
+    james: {
+      zero_responses: ledger.countToday('capture_ledger', e => e.person === 'james') === 0,
+      zero_pillars: gateState.pillars_done === 0,
+      is_crash: false,
+    },
+  };
+  const now_hour = new Date().getHours();
+  if (crashSignals.james.zero_responses && crashSignals.james.zero_pillars && now_hour >= 13) {
+    crashSignals.james.is_crash = true;
+  }
+  context.crash_signals = crashSignals;
 
   // Write state
   const stateDir = path.join(SKILL_ROOT, 'state');
@@ -222,6 +266,10 @@ async function main() {
   const summary = {
     status: 'ok',
     computed_at: signalsOut.computed_at,
+    gate: gateState,
+    pillar_rate: `${pillarRate.full_days}/${pillarRate.total_days} (${Math.round(pillarRate.rate * 100)}%)`,
+    streaks: reinforcement.getStreakDisplay(),
+    crash_detected: crashSignals.james.is_crash,
     people: Object.fromEntries(people.map(p => [p, {
       active_tasks: signals[p].active_tasks,
       completions_today: signals[p].completions_today,

@@ -1,0 +1,13 @@
+{
+  "LOCKED_MORNING": "🔒 Morning gate. Complete one pillar to unlock.\nOptions: Exercise | Walk Captain | Honey-Do item | Clean house.\nSend a photo when done.",
+  "LOCKED_NIGHT": "🔒 Locked until tomorrow morning. See you then.",
+  "social_engineering_1": "🔒 Rules are rules. Which pillar are you doing?",
+  "social_engineering_2": "🔒 Same answer. Pick a pillar.",
+  "social_engineering_3": "🔒",
+  "social_engineering_4_plus": "",
+  "emergency_claim": "🔒 For real emergencies, use Google, call Laura, or call 911. I'll be here when a pillar is done.",
+  "bypass_activated": "⚠️ Bypass activated. {duration} hours. This shows in your weekly review.",
+  "bypass_cooldown": "⚠️ Bypass on cooldown. Available in {hours_remaining} hours.",
+  "grace_day": "🟡 Grace day activated. 2 pillars unlocks full access today.",
+  "default": "🔒 System locked. Complete a pillar to unlock."
+}

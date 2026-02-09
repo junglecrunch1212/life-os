@@ -1,0 +1,158 @@
+# PiaB v3 — System Configuration
+# This is the runtime config. Connections and household are separate.
+
+# ═══════════════════════════════════════
+# EARNED ACCESS GATE
+# ═══════════════════════════════════════
+
+gate:
+  enabled: true
+  baby_mode: false
+  grace_days_per_week: 1
+  pillar_count_required:
+    morning_unlock: 1    # 1 pillar → TIER_1
+    tier_2: 2
+    tier_3: 3
+    full_access: 4
+  deadlines:
+    tier_2: "11:30"      # 2nd pillar deadline
+    tier_3: "15:00"      # 3rd pillar deadline
+    lockout: "17:00"     # LOCKED_NIGHT if not FULL_ACCESS
+    protect_after: "20:00"  # Force LOCKED_NIGHT
+  timezone: "America/New_York"
+
+  pillars:
+    exercise:
+      description: "Cardio workout (James)"
+      verification: "photo"       # Phase 1: photo + timestamp
+      future_verification: "apple_watch_hr"
+      keywords: ["exercise", "run", "workout", "cardio", "gym", "ran", "jog", "lift", "swim"]
+      starter_step: "Put on shoes and walk to the end of the driveway"
+      values_connection: "This is how you show up sharper for Henry."
+
+    captain:
+      description: "Walk the dog"
+      verification: "photo"
+      future_verification: "gps_track"
+      keywords: ["captain", "dog", "walk", "walked"]
+      starter_step: "Clip Captain's leash before sitting down"
+      values_connection: "Captain depends on you. This is care."
+
+    honey_do:
+      description: "Laura-assigned task from LIST_ITEMS"
+      verification: "photo"
+      future_verification: "list_items_status"
+      keywords: ["honey do", "honeydew", "honey-do", "laura", "fix", "repair", "task"]
+      starter_step: "Open the toolbox or read the first step"
+      values_connection: "Laura notices. This is partnership."
+
+    clean:
+      description: "Cleaning task"
+      verification: "photo"
+      future_verification: "photo"
+      keywords: ["clean", "tidy", "sweep", "mop", "vacuum", "dishes", "laundry", "tidied", "cleaned"]
+      starter_step: "Set a 15-minute timer"
+      values_connection: "Henry's growing up in this space. Make it good."
+
+# ═══════════════════════════════════════
+# FINANCIAL STAKES
+# ═══════════════════════════════════════
+
+financial_stakes:
+  active: false            # Enable in Phase 2
+  amount: 25
+  destination: "anti_charity"   # anti_charity | laura_fun | henry_college
+  destination_detail: ""
+  locked_until: null       # Prevent mid-week changes
+  cooldown_weeks_on_increase: 4
+  weekly_cap: 100
+
+# ═══════════════════════════════════════
+# SOCIAL ACCOUNTABILITY
+# ═══════════════════════════════════════
+
+social_accountability:
+  laura_weekly_scorecard: false     # Enable after Laura opts in
+  laura_bookend_checkins: false     # Notify Laura on honey-do start/finish
+  laura_escalation_enabled: false   # Tier 3: text Laura on bad days
+  laura_escalation_opted_in_this_week: false
+  accountability_buddy:
+    enabled: false
+    phone: ""
+    name: ""
+
+# ═══════════════════════════════════════
+# COACHING SETTINGS
+# ═══════════════════════════════════════
+
+coaching:
+  implementation_intentions: true
+  body_doubling: false        # Enable in Phase 2
+  variable_reinforcement: false  # Enable in Phase 3
+  temptation_bundles: false   # Enable in Phase 2
+  values_connection_frequency: 0.30   # 30% of briefings
+  starter_step_threshold: "always"    # always | on_resistance | never
+
+  # Message timing
+  morning_briefing_trigger: "on_tier1_transition"  # Fires when first pillar unlocks
+  midday_checkin_time: "13:00"
+  evening_close_time: "19:30"
+  sunday_review_time: "18:00"
+
+  # Crash detection — silence is an intervention
+  crash_signals:
+    zero_responses_hours: 4
+    zero_pillars_by_hour: 13
+    response_latency_hours: 4
+  crash_response: "silence"   # Do NOT nudge during crash
+
+# ═══════════════════════════════════════
+# ADAPTATION THRESHOLDS
+# ═══════════════════════════════════════
+
+thresholds:
+  response_rate_low: 0.40
+  crash_days_high: 2
+  domain_balance_low: 3
+  laura_friction_high: 3.0
+  exercise_rate_low: 4           # out of 7
+  pillar_rate_low: 0.40
+  pillar_rate_target: 0.60
+  pillar_rate_excellent: 0.80
+  lockout_nights_high: 3
+  self_initiation_trending: true
+
+# ═══════════════════════════════════════
+# PROGRESSIVE UNLOCKS (streak rewards)
+# ═══════════════════════════════════════
+
+progressive_unlocks:
+  week_2_streak: "Custom morning briefing theme"
+  week_4_streak: "OpenClaw proactively suggests project ideas"
+  week_8_streak: "Extended evening hours (8pm → 9pm)"
+  week_12_streak: "Saturday free mode — no pillar requirement one weekend day"
+
+# ═══════════════════════════════════════
+# EMERGENCY BYPASS
+# ═══════════════════════════════════════
+
+emergency_bypass:
+  enabled: true
+  duration_hours: 2
+  cooldown_hours: 72
+  trigger_phrase: "EMERGENCY BYPASS"
+
+# ═══════════════════════════════════════
+# CRISIS PROTOCOL
+# ═══════════════════════════════════════
+
+crisis:
+  signals:
+    consecutive_zero_days: 3     # 3+ days with 0 pillars AND 0 responses
+    explicit_shutdown_request: true
+  responses:
+    step_1: "Acknowledge without judgment"
+    step_2: "Offer baby mode"
+    step_3: "Text accountability buddy after no response"
+    step_4: "Text Laura with pre-approved support message after 5+ days"
+    step_5: "Never diagnose, never therapize, never lecture"
