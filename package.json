@@ -5,7 +5,7 @@
   "description": "PiaB v3 — Autonomous ADHD Chief of Staff for OpenClaw",
   "private": true,
   "dependencies": {
-    "js-yaml": "^4.1.0"
+    "js-yaml": "^4.2.0"
   },
   "scripts": {
     "observe": "node scripts/observe.mjs",
